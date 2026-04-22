@@ -62,6 +62,15 @@ export interface RotateResult {
   size: number;
 }
 
+export interface RevertResult {
+  /** Path of the file (unchanged from input). */
+  path: string;
+  /** New file size in bytes; 0 if no revert took place. */
+  size: number;
+  /** True if a backup existed and was restored; false if there was nothing to revert. */
+  reverted: boolean;
+}
+
 /** API exposed by the preload script onto window.api. */
 export interface AppApi {
   openFolder: () => Promise<OpenFolderResult | null>;
@@ -70,6 +79,8 @@ export interface AppApi {
   moveImage: (imagePath: string, destinationFolder: string) => Promise<MoveResult>;
   undoLastMove: () => Promise<UndoResult | null>;
   rotateImage: (imagePath: string, direction: RotationDirection) => Promise<RotateResult>;
+  autoCorrectImage: (imagePath: string) => Promise<RotateResult>;
+  revertAutoCorrect: (imagePath: string) => Promise<RevertResult>;
   validateFolderName: (name: string) => { ok: boolean; reason?: string };
 }
 

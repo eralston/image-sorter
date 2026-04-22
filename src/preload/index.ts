@@ -10,6 +10,8 @@ const api: AppApi = {
   undoLastMove: () => ipcRenderer.invoke('app:undoLastMove'),
   rotateImage: (imagePath, direction) =>
     ipcRenderer.invoke('app:rotateImage', imagePath, direction),
+  autoCorrectImage: (imagePath) => ipcRenderer.invoke('app:autoCorrectImage', imagePath),
+  revertAutoCorrect: (imagePath) => ipcRenderer.invoke('app:revertAutoCorrect', imagePath),
   validateFolderName: (name) => {
     // Synchronous-ish: wraps the async IPC. The API contract returns sync; we
     // use a tiny sync stub here that mirrors main-process logic for live UI

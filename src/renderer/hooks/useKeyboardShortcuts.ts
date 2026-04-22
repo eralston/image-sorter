@@ -8,6 +8,8 @@ export interface ShortcutHandlers {
   onQuickSort: (index: number) => void;
   onRotateCW: () => void;
   onRotateCCW: () => void;
+  onAutoCorrect: () => void;
+  onRevertAutoCorrect: () => void;
 }
 
 export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
@@ -47,6 +49,14 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         case 'R':
           e.preventDefault();
           handlers.onRotateCCW();
+          break;
+        case 'c':
+          e.preventDefault();
+          handlers.onAutoCorrect();
+          break;
+        case 'C':
+          e.preventDefault();
+          handlers.onRevertAutoCorrect();
           break;
         default:
           if (/^[1-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {

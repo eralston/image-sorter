@@ -22,7 +22,9 @@ export function App() {
     onOpenFolder: session.openFolder,
     onQuickSort,
     onRotateCW: () => session.rotate('cw'),
-    onRotateCCW: () => session.rotate('ccw')
+    onRotateCCW: () => session.rotate('ccw'),
+    onAutoCorrect: session.autoCorrect,
+    onRevertAutoCorrect: session.revertAutoCorrect
   });
 
   const total = session.images.length;
@@ -50,6 +52,20 @@ export function App() {
           title="Rotate clockwise (R)"
         >
           ↻ Rotate
+        </button>
+        <button
+          onClick={session.autoCorrect}
+          disabled={!session.current || session.isBusy}
+          title="Auto color correct (C) — requires ImageMagick"
+        >
+          ✨ Auto-correct
+        </button>
+        <button
+          onClick={session.revertAutoCorrect}
+          disabled={!session.current || session.isBusy}
+          title="Revert to original (Shift+C) — restores from .orig backup"
+        >
+          ↶ Revert
         </button>
         <button onClick={session.undo} disabled={session.isBusy}>
           Undo
@@ -86,7 +102,7 @@ export function App() {
           </span>
         )}
         <span className="spacer" />
-        <span className="hint">← / →: navigate · 1–9: quick sort · R / Shift+R: rotate · Ctrl+Z: undo · Ctrl+O: open</span>
+        <span className="hint">← / →: navigate · 1–9: quick sort · R / Shift+R: rotate · C: auto-correct · Shift+C: revert · Ctrl+Z: undo · Ctrl+O: open</span>
       </footer>
     </div>
   );

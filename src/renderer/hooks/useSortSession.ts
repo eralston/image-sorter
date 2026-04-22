@@ -18,6 +18,8 @@ export interface SortSession {
   moveTo: (folder: DestinationFolder) => Promise<void>;
   undo: () => Promise<void>;
   rotate: (direction: RotationDirection) => Promise<void>;
+  autoCorrect: () => Promise<void>;
+  revertAutoCorrect: () => Promise<void>;
   createSubfolder: (name: string) => Promise<DestinationFolder | null>;
 }
 
@@ -167,6 +169,54 @@ export function useSortSession(): SortSession {
     [images, isBusy]
   );
 
+  const autoCorrect = useCallback(async () => {
+    const i = indexRef.current;
+    const img = images[i];
+    if (!img || isBusy) return;
+    setBusy(true);
+    try {
+      const result = await window.api.autoCorrectImage(img.path);
+      const baseUrl = img.url.split('?')[0];
+      const newUrl = `${baseUrl}?v=${Date.now()}`;
+      setImages((prev) => {
+        const next = prev.slice();
+        next[i] = { ...next[i], url: newUrl, size: result.size };
+        return next;
+      });
+      setOk('Auto color correction applied');
+    } catch (e) {
+      setError(e, 'Auto color correction failed');
+    } finally {
+      setBusy(false);
+    }
+  }, [images, isBusy]);
+
+  const revertAutoCorrect = useCallback(async () => {
+    const i = indexRef.current;
+    const img = images[i];
+    if (!img || isBusy) return;
+    setBusy(true);
+    try {
+      const result = await window.api.revertAutoCorrect(img.path);
+      if (!result.reverted) {
+        setStatus({ kind: 'idle', message: 'No backup to revert to' });
+        return;
+      }
+      const baseUrl = img.url.split('?')[0];
+      const newUrl = `${baseUrl}?v=${Date.now()}`;
+      setImages((prev) => {
+        const next = prev.slice();
+        next[i] = { ...next[i], url: newUrl, size: result.size };
+        return next;
+      });
+      setOk('Reverted to original');
+    } catch (e) {
+      setError(e, 'Revert failed');
+    } finally {
+      setBusy(false);
+    }
+  }, [images, isBusy]);
+
   const createSubfolder = useCallback(
     async (name: string) => {
       if (!folderPath) return null;
@@ -187,7 +237,6 @@ export function useSortSession(): SortSession {
     [folderPath]
   );
 
-  // Clamp index when images change.
   useEffect(() => {
     if (currentIndex >= images.length) {
       setCurrentIndex(Math.max(images.length - 1, 0));
@@ -212,6 +261,8 @@ export function useSortSession(): SortSession {
     moveTo,
     undo,
     rotate,
+    autoCorrect,
+    revertAutoCorrect,
     createSubfolder
   };
 }

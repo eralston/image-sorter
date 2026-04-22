@@ -9,6 +9,8 @@ import {
   validateFolderName
 } from './file-manager';
 import { rotateImage } from './image-rotation';
+import { autoCorrectImage } from './image-correct';
+import { revertAutoCorrect } from './image-revert';
 import { AppError, RotationDirection } from '../shared/types';
 
 function toAppError(e: unknown): AppError {
@@ -91,6 +93,25 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
       await rotateImage(imagePath, direction);
       const stat = await fs.stat(imagePath);
       return { path: imagePath, size: stat.size };
+    })
+  );
+
+  ipcMain.handle(
+    'app:autoCorrectImage',
+    wrap(async (_e, imagePath: string) => {
+      await autoCorrectImage(imagePath);
+      const stat = await fs.stat(imagePath);
+      return { path: imagePath, size: stat.size };
+    })
+  );
+
+  ipcMain.handle(
+    'app:revertAutoCorrect',
+    wrap(async (_e, imagePath: string) => {
+      const reverted = await revertAutoCorrect(imagePath);
+      if (!reverted) return { path: imagePath, size: 0, reverted: false };
+      const stat = await fs.stat(imagePath);
+      return { path: imagePath, size: stat.size, reverted: true };
     })
   );
 

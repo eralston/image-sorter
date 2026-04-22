@@ -54,7 +54,12 @@ export async function scanFolder(folderPath: string): Promise<OpenFolderResult> 
   const entries = await fs.readdir(folderPath, { withFileTypes: true });
 
   const imageEntries = entries.filter(
-    (e) => e.isFile() && SUPPORTED_EXTENSIONS.includes(path.extname(e.name).toLowerCase() as any)
+    (e) =>
+      e.isFile() &&
+      SUPPORTED_EXTENSIONS.includes(path.extname(e.name).toLowerCase() as any) &&
+      // Hide auto-correct backup siblings (e.g. "photo.orig.jpg") from the
+      // sortable list — they're preserved originals, not images to triage.
+      !/\.orig\.[^.]+$/i.test(e.name)
   );
   const folderEntries = entries.filter((e) => e.isDirectory());
 
