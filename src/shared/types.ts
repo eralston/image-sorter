@@ -1,0 +1,80 @@
+export const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'] as const;
+
+export interface ImageFile {
+  /** Absolute path on disk. */
+  path: string;
+  /** File name including extension. */
+  name: string;
+  /** File URL suitable for `<img src>` (uses the safe-file:// protocol). */
+  url: string;
+  /** Size in bytes. */
+  size: number;
+}
+
+export interface DestinationFolder {
+  /** Absolute path on disk. */
+  path: string;
+  /** Display name (basename). */
+  name: string;
+}
+
+export interface OpenFolderResult {
+  folderPath: string;
+  images: ImageFile[];
+  destinations: DestinationFolder[];
+}
+
+export interface MoveResult {
+  /** New absolute path of the moved file. */
+  newPath: string;
+  /** Original absolute path before the move. */
+  originalPath: string;
+  /** True if the destination filename was auto-suffixed to avoid collision. */
+  renamed: boolean;
+}
+
+export interface UndoResult {
+  /** Path the file was restored to. */
+  restoredPath: string;
+  /** Path it was moved back from. */
+  fromPath: string;
+}
+
+export interface AppError {
+  code:
+    | 'PERMISSION'
+    | 'NOT_FOUND'
+    | 'INVALID_NAME'
+    | 'COLLISION'
+    | 'IO'
+    | 'CANCELLED'
+    | 'UNSUPPORTED'
+    | 'UNKNOWN';
+  message: string;
+}
+
+export type RotationDirection = 'cw' | 'ccw';
+
+export interface RotateResult {
+  /** Path of the rotated file (unchanged from input). */
+  path: string;
+  /** New file size in bytes after the rotation was written. */
+  size: number;
+}
+
+/** API exposed by the preload script onto window.api. */
+export interface AppApi {
+  openFolder: () => Promise<OpenFolderResult | null>;
+  refreshFolder: (folderPath: string) => Promise<OpenFolderResult>;
+  createSubfolder: (parentPath: string, name: string) => Promise<DestinationFolder>;
+  moveImage: (imagePath: string, destinationFolder: string) => Promise<MoveResult>;
+  undoLastMove: () => Promise<UndoResult | null>;
+  rotateImage: (imagePath: string, direction: RotationDirection) => Promise<RotateResult>;
+  validateFolderName: (name: string) => { ok: boolean; reason?: string };
+}
+
+declare global {
+  interface Window {
+    api: AppApi;
+  }
+}
