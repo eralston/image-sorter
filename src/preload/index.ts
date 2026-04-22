@@ -19,7 +19,10 @@ const api: AppApi = {
     // feedback. Keeping the IPC version available for canonical checks.
     void ipcRenderer; // silence unused in some bundlers
     return validateLocally(name);
-  }
+  },
+  pickFolderForOrganize: () => ipcRenderer.invoke('app:pickFolderForOrganize'),
+  pickExportTargetFolder: () => ipcRenderer.invoke('app:pickExportTargetFolder'),
+  exportOrganized: (request) => ipcRenderer.invoke('app:exportOrganized', request)
 };
 
 function validateLocally(name: string): { ok: boolean; reason?: string } {

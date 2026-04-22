@@ -12,7 +12,8 @@ import { rotateImage } from './image-rotation';
 import { autoCorrectImage } from './image-correct';
 import { cropImage } from './image-crop';
 import { revertAutoCorrect } from './image-revert';
-import { AppError, CropRect, RotationDirection } from '../shared/types';
+import { exportOrganized, scanFolderRecursive } from './organize-manager';
+import { AppError, CropRect, ExportRequest, RotationDirection } from '../shared/types';
 
 function toAppError(e: unknown): AppError {
   const err = e as NodeJS.ErrnoException;
@@ -128,5 +129,36 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
   ipcMain.handle(
     'app:validateFolderName',
     wrap(async (_e, name: string) => validateFolderName(name))
+  );
+
+  ipcMain.handle(
+    'app:pickFolderForOrganize',
+    wrap(async () => {
+      const win = getWindow();
+      const result = await dialog.showOpenDialog(win ?? (undefined as any), {
+        title: 'Choose a folder to organize',
+        properties: ['openDirectory']
+      });
+      if (result.canceled || result.filePaths.length === 0) return null;
+      return await scanFolderRecursive(result.filePaths[0]);
+    })
+  );
+
+  ipcMain.handle(
+    'app:pickExportTargetFolder',
+    wrap(async () => {
+      const win = getWindow();
+      const result = await dialog.showOpenDialog(win ?? (undefined as any), {
+        title: 'Choose target folder for export',
+        properties: ['openDirectory', 'createDirectory']
+      });
+      if (result.canceled || result.filePaths.length === 0) return null;
+      return result.filePaths[0];
+    })
+  );
+
+  ipcMain.handle(
+    'app:exportOrganized',
+    wrap(async (_e, request: ExportRequest) => exportOrganized(request))
   );
 }

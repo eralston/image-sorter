@@ -82,6 +82,42 @@ export interface RevertResult {
   reverted: boolean;
 }
 
+export interface OrganizeImage {
+  /** Absolute path on disk. */
+  path: string;
+  /** Path relative to the scanned root, using forward slashes. */
+  relPath: string;
+  /** File name including extension. */
+  name: string;
+  /** File URL suitable for `<img src>` (uses the safe-file:// protocol). */
+  url: string;
+  /** Size in bytes. */
+  size: number;
+}
+
+export interface OrganizeScanResult {
+  /** The root folder that was scanned. */
+  rootPath: string;
+  /** All images found beneath the root, with `.orig.*` backups excluded. */
+  images: OrganizeImage[];
+}
+
+export interface ExportRequest {
+  /** Display name for the project; used as the filename suffix. */
+  projectName: string;
+  /** Absolute path of the target folder where files will be copied. */
+  targetFolder: string;
+  /** Ordered absolute paths of the source images to copy. */
+  orderedSourcePaths: string[];
+}
+
+export interface ExportResult {
+  /** Number of files copied. */
+  copied: number;
+  /** Absolute target folder path. */
+  targetFolder: string;
+}
+
 /** API exposed by the preload script onto window.api. */
 export interface AppApi {
   openFolder: () => Promise<OpenFolderResult | null>;
@@ -94,6 +130,9 @@ export interface AppApi {
   cropImage: (imagePath: string, rect: CropRect) => Promise<RotateResult>;
   revertAutoCorrect: (imagePath: string) => Promise<RevertResult>;
   validateFolderName: (name: string) => { ok: boolean; reason?: string };
+  pickFolderForOrganize: () => Promise<OrganizeScanResult | null>;
+  pickExportTargetFolder: () => Promise<string | null>;
+  exportOrganized: (request: ExportRequest) => Promise<ExportResult>;
 }
 
 declare global {
