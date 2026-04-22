@@ -60,6 +60,59 @@ Not included in v1:
 - Undo for accidental moves
 - Optional click-to-sort fallback if drag-and-drop proves awkward in practice
 
+### Image editing (auto color correction & cropping)
+
+For batches of old or scanned photos, two lightweight in-place edits are
+available right next to the sorting workflow. Both edits write back to the
+original file and are intentionally simple — there is no edit history beyond a
+single shared backup of the unmodified original.
+
+- **Auto color correct** (`✨ Auto-correct` button, **C** key): a general-purpose,
+  per-image automatic color correction. Internally this runs ImageMagick with
+  `-auto-orient -auto-level -auto-gamma -contrast-stretch 0.5%x0.5%`. The
+  per-channel `-auto-level` is the key step — it stretches each RGB channel
+  independently, which removes the kind of color cast that scanned photos
+  typically pick up over time. JPEGs are re-encoded at quality 92.
+- **Crop** (`✂ Crop` button, **X** key): click and drag anywhere over the image
+  to draw a selection rectangle, then press **X** (or click the button) to crop
+  the file to that rectangle. **Esc** clears an in-progress selection. The drag
+  start and end points are clamped to the displayed image bounds, so it is fine
+  to begin or end the drag in the dark letterbox area outside the photo —
+  selections still snap to the nearest edge pixel.
+- **Revert** (`↶ Revert` button, **Shift+C** key): restores the file from its
+  `.orig` backup, undoing all auto-correction and cropping in one step.
+
+Backup behavior:
+
+- The first destructive edit (correct or crop) on a file copies it to a sibling
+  named `<photo>.orig.<ext>` (for example `IMG_0001.orig.jpg`).
+- Subsequent edits on the same image leave that backup untouched, so it always
+  represents the true pre-edit original.
+- Backup files are hidden from the sortable image list, so they don't clutter
+  the sorting flow.
+- Revert consumes the backup; after a revert the file is back to its original
+  state and a new edit will create a fresh backup.
+
+### ImageMagick requirement
+
+Auto-correct and crop both shell out to **ImageMagick 7** (`magick.exe`). The
+rest of the app — opening folders, sorting, undo, rotation — works without it.
+
+Install ImageMagick from <https://imagemagick.org/script/download.php#windows>.
+The official Windows installer's "Add application directory to your system
+path" option is convenient but not required.
+
+The app discovers `magick.exe` in this order, the first time you trigger an
+edit in a session (the result is cached):
+
+1. Plain `magick` on `PATH`.
+2. Any `ImageMagick-*\magick.exe` directly under `%ProgramFiles%`,
+   `%ProgramW6432%`, or `%ProgramFiles(x86)%`. When multiple versions are
+   installed, the lexically highest (typically the newest) is preferred.
+
+If neither lookup succeeds, the app surfaces a clear error in the status bar
+explaining that ImageMagick must be installed and the app restarted.
+
 ### Reliability
 - Graceful handling of missing files
 - Clear feedback for permission issues or invalid operations
