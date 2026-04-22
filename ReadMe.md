@@ -3,9 +3,17 @@
 Image Sorter is a Windows desktop app for taking a pile of images on disk and turning it into something useful — whether that's a tidy folder hierarchy, a corrected and cropped batch of scans, or an ordered, sequentially-named set of files ready to hand off to a downstream tool that only understands filenames. The app is built around two tightly focused workflows that share a common image stack:
 
 - **Edit mode** — the original "one image at a time" triage loop. Open a folder, see one large image, optionally rotate / auto-color-correct / crop it, and move it into one of the visible destination subfolders with a click or a hotkey. Optimized for fast keyboard-driven decisions on large batches.
+
+<img width="1919" height="1031" alt="image" src="https://github.com/user-attachments/assets/78852912-d240-4c56-b165-1dd8e1fdb28d" />
+
+
 - **Organize mode** — once images are sorted into a folder hierarchy, this mode treats that whole hierarchy as a single pool. Select a root folder; the app recursively pulls every image (skipping `.orig.*` backup snapshots), shows them in a draggable grid, and lets you reorder them, exclude the ones you don't want, and export the survivors to a target folder, copied and renamed with a numeric prefix and a project name like `1-mo-ralston-images.jpg`, `2-mo-ralston-images.jpg`, …
 
+<img width="1917" height="1028" alt="image" src="https://github.com/user-attachments/assets/959790e4-9366-4633-a3a6-872ffd0e981f" />
+
 The two modes share a top-of-window tab switcher, so you can flip between editing individual images and assembling them into an ordered set without leaving the app.
+
+PS: This app was originally created to help organize photos for the passing of my father, Maurice Howell Ralston, whose adventures were so numerous I had to turn to Vibe Coding to organize them all
 
 ## Goal
 
