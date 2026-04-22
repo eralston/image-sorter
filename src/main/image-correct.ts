@@ -33,7 +33,7 @@ async function fileExists(p: string): Promise<boolean> {
  * then falls back to scanning the common Windows install directories — the
  * official installer doesn't always add itself to PATH. Result is cached.
  */
-async function findMagick(): Promise<string | null> {
+export async function findMagick(): Promise<string | null> {
   if (magickPath !== undefined) return magickPath;
 
   // 1. PATH lookup.

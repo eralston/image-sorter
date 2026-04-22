@@ -1,11 +1,14 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { ImageViewer } from './components/ImageViewer';
 import { DestinationFolders } from './components/DestinationFolders';
 import { useSortSession } from './hooks/useSortSession';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import type { CropRect } from '../shared/types';
 
 export function App() {
   const session = useSortSession();
+  const [pendingCrop, setPendingCrop] = useState<CropRect | null>(null);
+  const [clearCropSignal, setClearCropSignal] = useState(0);
 
   const onQuickSort = useCallback(
     (idx: number) => {
@@ -14,6 +17,17 @@ export function App() {
     },
     [session]
   );
+
+  const clearCrop = useCallback(() => {
+    setPendingCrop(null);
+    setClearCropSignal((n) => n + 1);
+  }, []);
+
+  const applyCrop = useCallback(async () => {
+    if (!pendingCrop) return;
+    await session.crop(pendingCrop);
+    clearCrop();
+  }, [pendingCrop, session, clearCrop]);
 
   useKeyboardShortcuts({
     onNext: session.next,
@@ -24,7 +38,9 @@ export function App() {
     onRotateCW: () => session.rotate('cw'),
     onRotateCCW: () => session.rotate('ccw'),
     onAutoCorrect: session.autoCorrect,
-    onRevertAutoCorrect: session.revertAutoCorrect
+    onRevertAutoCorrect: session.revertAutoCorrect,
+    onApplyCrop: applyCrop,
+    onClearCrop: clearCrop
   });
 
   const total = session.images.length;
@@ -67,6 +83,13 @@ export function App() {
         >
           ↶ Revert
         </button>
+        <button
+          onClick={applyCrop}
+          disabled={!pendingCrop || session.isBusy}
+          title="Crop to selection (X)"
+        >
+          ✂ Crop
+        </button>
         <button onClick={session.undo} disabled={session.isBusy}>
           Undo
         </button>
@@ -85,6 +108,8 @@ export function App() {
         <ImageViewer
           image={session.current}
           position={{ current: session.currentIndex, total }}
+          onSelectionChange={setPendingCrop}
+          clearSignal={clearCropSignal}
         />
         <DestinationFolders
           destinations={session.destinations}
@@ -102,7 +127,7 @@ export function App() {
           </span>
         )}
         <span className="spacer" />
-        <span className="hint">← / →: navigate · 1–9: quick sort · R / Shift+R: rotate · C: auto-correct · Shift+C: revert · Ctrl+Z: undo · Ctrl+O: open</span>
+        <span className="hint">← / →: navigate · 1–9: quick sort · R / Shift+R: rotate · C: auto-correct · Drag + X: crop · Esc: clear · Shift+C: revert · Ctrl+Z: undo · Ctrl+O: open</span>
       </footer>
     </div>
   );

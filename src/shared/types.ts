@@ -55,6 +55,17 @@ export interface AppError {
 
 export type RotationDirection = 'cw' | 'ccw';
 
+export interface CropRect {
+  /** Left edge in oriented-image pixels. */
+  x: number;
+  /** Top edge in oriented-image pixels. */
+  y: number;
+  /** Width in oriented-image pixels. */
+  width: number;
+  /** Height in oriented-image pixels. */
+  height: number;
+}
+
 export interface RotateResult {
   /** Path of the rotated file (unchanged from input). */
   path: string;
@@ -80,6 +91,7 @@ export interface AppApi {
   undoLastMove: () => Promise<UndoResult | null>;
   rotateImage: (imagePath: string, direction: RotationDirection) => Promise<RotateResult>;
   autoCorrectImage: (imagePath: string) => Promise<RotateResult>;
+  cropImage: (imagePath: string, rect: CropRect) => Promise<RotateResult>;
   revertAutoCorrect: (imagePath: string) => Promise<RevertResult>;
   validateFolderName: (name: string) => { ok: boolean; reason?: string };
 }

@@ -10,6 +10,8 @@ export interface ShortcutHandlers {
   onRotateCCW: () => void;
   onAutoCorrect: () => void;
   onRevertAutoCorrect: () => void;
+  onApplyCrop: () => void;
+  onClearCrop: () => void;
 }
 
 export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
@@ -57,6 +59,15 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         case 'C':
           e.preventDefault();
           handlers.onRevertAutoCorrect();
+          break;
+        case 'x':
+        case 'X':
+          e.preventDefault();
+          handlers.onApplyCrop();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          handlers.onClearCrop();
           break;
         default:
           if (/^[1-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {

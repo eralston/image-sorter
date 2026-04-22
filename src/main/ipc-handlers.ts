@@ -10,8 +10,9 @@ import {
 } from './file-manager';
 import { rotateImage } from './image-rotation';
 import { autoCorrectImage } from './image-correct';
+import { cropImage } from './image-crop';
 import { revertAutoCorrect } from './image-revert';
-import { AppError, RotationDirection } from '../shared/types';
+import { AppError, CropRect, RotationDirection } from '../shared/types';
 
 function toAppError(e: unknown): AppError {
   const err = e as NodeJS.ErrnoException;
@@ -100,6 +101,15 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
     'app:autoCorrectImage',
     wrap(async (_e, imagePath: string) => {
       await autoCorrectImage(imagePath);
+      const stat = await fs.stat(imagePath);
+      return { path: imagePath, size: stat.size };
+    })
+  );
+
+  ipcMain.handle(
+    'app:cropImage',
+    wrap(async (_e, imagePath: string, rect: CropRect) => {
+      await cropImage(imagePath, rect);
       const stat = await fs.stat(imagePath);
       return { path: imagePath, size: stat.size };
     })

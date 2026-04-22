@@ -11,6 +11,7 @@ const api: AppApi = {
   rotateImage: (imagePath, direction) =>
     ipcRenderer.invoke('app:rotateImage', imagePath, direction),
   autoCorrectImage: (imagePath) => ipcRenderer.invoke('app:autoCorrectImage', imagePath),
+  cropImage: (imagePath, rect) => ipcRenderer.invoke('app:cropImage', imagePath, rect),
   revertAutoCorrect: (imagePath) => ipcRenderer.invoke('app:revertAutoCorrect', imagePath),
   validateFolderName: (name) => {
     // Synchronous-ish: wraps the async IPC. The API contract returns sync; we

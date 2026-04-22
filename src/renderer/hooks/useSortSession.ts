@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { DestinationFolder, ImageFile, OpenFolderResult, RotationDirection } from '../../shared/types';
+import type { DestinationFolder, ImageFile, OpenFolderResult, RotationDirection, CropRect } from '../../shared/types';
 
 export interface SortSession {
   folderPath: string | null;
@@ -19,6 +19,7 @@ export interface SortSession {
   undo: () => Promise<void>;
   rotate: (direction: RotationDirection) => Promise<void>;
   autoCorrect: () => Promise<void>;
+  crop: (rect: CropRect) => Promise<void>;
   revertAutoCorrect: () => Promise<void>;
   createSubfolder: (name: string) => Promise<DestinationFolder | null>;
 }
@@ -191,6 +192,31 @@ export function useSortSession(): SortSession {
     }
   }, [images, isBusy]);
 
+  const crop = useCallback(
+    async (rect: CropRect) => {
+      const i = indexRef.current;
+      const img = images[i];
+      if (!img || isBusy) return;
+      setBusy(true);
+      try {
+        const result = await window.api.cropImage(img.path, rect);
+        const baseUrl = img.url.split('?')[0];
+        const newUrl = `${baseUrl}?v=${Date.now()}`;
+        setImages((prev) => {
+          const next = prev.slice();
+          next[i] = { ...next[i], url: newUrl, size: result.size };
+          return next;
+        });
+        setOk('Cropped');
+      } catch (e) {
+        setError(e, 'Crop failed');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [images, isBusy]
+  );
+
   const revertAutoCorrect = useCallback(async () => {
     const i = indexRef.current;
     const img = images[i];
@@ -262,6 +288,7 @@ export function useSortSession(): SortSession {
     undo,
     rotate,
     autoCorrect,
+    crop,
     revertAutoCorrect,
     createSubfolder
   };
